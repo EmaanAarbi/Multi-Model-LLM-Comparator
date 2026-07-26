@@ -100,6 +100,12 @@ Open `http://localhost:3000`. The default API URL is
 the interface. For a deployed frontend, configure the backend's
 `CORS_ORIGINS` with the deployed site origin.
 
+From the repository root on Windows, both servers can also be started with:
+
+```powershell
+.\run-local.ps1
+```
+
 ## Cost estimates
 
 Prices are maintained in `backend/app/services/cost_service.py`. Unknown model
