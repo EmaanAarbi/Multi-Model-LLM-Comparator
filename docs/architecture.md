@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    U[API client] --> F[FastAPI routes]
+    U[React interface] --> F[FastAPI routes]
     F --> C[Comparator service]
     C --> G[Gemini adapter]
     C --> O[OpenAI adapter]

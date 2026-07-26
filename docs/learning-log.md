@@ -176,3 +176,28 @@ logic small.
 Tests cover error classification and adapter failures. Docker uses a supported
 Python runtime, Compose provisions PostgreSQL, and CI runs the complete
 network-free test suite.
+
+## Milestone 8 — React comparison interface
+
+### Concept
+
+A typed, responsive client consumes the normalized comparison API and presents
+model evidence without exposing provider credentials.
+
+### Real problem it solves
+
+Users can select providers, run one prompt, inspect side-by-side results,
+review recommendations and history, and submit manual quality ratings without
+working directly with API documentation.
+
+### Trade-off
+
+The deployed frontend needs a reachable backend URL and matching CORS origin.
+Keeping that connection configurable supports local development and different
+hosting providers without rebuilding the interface.
+
+### How we prove it works
+
+The production frontend build, lint checks, and rendered HTML tests verify the
+final application and confirm that all starter-only assets and metadata were
+removed.

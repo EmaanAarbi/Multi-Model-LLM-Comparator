@@ -17,6 +17,15 @@ class Settings(BaseSettings):
     database_url: str = (
         f"sqlite:///{(BACKEND_DIR / 'comparator.db').as_posix()}"
     )
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
