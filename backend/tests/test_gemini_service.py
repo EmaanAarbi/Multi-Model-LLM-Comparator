@@ -25,13 +25,23 @@ def build_service(response: object) -> GeminiService:
 
 
 def test_gemini_service_implements_provider_contract() -> None:
-    service = build_service(SimpleNamespace(text="Hello"))
+    service = build_service(
+        SimpleNamespace(text="Hello", usage_metadata=None)
+    )
 
     assert isinstance(service, LLMProvider)
 
 
 def test_generate_normalizes_successful_response() -> None:
-    service = build_service(SimpleNamespace(text="Hello"))
+    service = build_service(
+        SimpleNamespace(
+            text="Hello",
+            usage_metadata=SimpleNamespace(
+                prompt_token_count=10,
+                candidates_token_count=5,
+            ),
+        )
+    )
 
     result = service.generate("Say hello")
 
@@ -39,6 +49,8 @@ def test_generate_normalizes_successful_response() -> None:
     assert result.model == "test-model"
     assert result.content == "Hello"
     assert result.latency_ms >= 0
+    assert result.input_tokens == 10
+    assert result.output_tokens == 5
     assert result.error is None
     service.client.models.generate_content.assert_called_once_with(
         model="test-model",
@@ -47,7 +59,9 @@ def test_generate_normalizes_successful_response() -> None:
 
 
 def test_generate_normalizes_empty_content() -> None:
-    service = build_service(SimpleNamespace(text=""))
+    service = build_service(
+        SimpleNamespace(text="", usage_metadata=None)
+    )
 
     result = service.generate("Say hello")
 
@@ -56,11 +70,14 @@ def test_generate_normalizes_empty_content() -> None:
 
 
 def test_generate_normalizes_sdk_exception() -> None:
-    service = build_service(SimpleNamespace(text="unused"))
+    service = build_service(
+        SimpleNamespace(text="unused", usage_metadata=None)
+    )
     service.client.models.generate_content.side_effect = RuntimeError("offline")
 
     result = service.generate("Say hello")
 
     assert result.content is None
     assert result.latency_ms >= 0
-    assert result.error == "RuntimeError: offline"
+    assert result.error_code == "provider_error"
+    assert result.error == "Provider request failed."

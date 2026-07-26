@@ -1,0 +1,62 @@
+[
+  {
+    "id": "summarization",
+    "category": "summarization",
+    "prompt": "Summarize this complaint in exactly three bullets: The delivery was five days late, the box was damaged, and support did not reply.",
+    "criteria": ["exactly three bullets", "no invented details"]
+  },
+  {
+    "id": "json-extraction",
+    "category": "structured-output",
+    "prompt": "Return JSON only with name and email: Contact Jane Doe at jane@example.com.",
+    "criteria": ["valid JSON", "correct name", "correct email"]
+  },
+  {
+    "id": "simple-explanation",
+    "category": "education",
+    "prompt": "Explain vector embeddings to a beginner in under 100 words.",
+    "criteria": ["beginner friendly", "under 100 words"]
+  },
+  {
+    "id": "resume-rewrite",
+    "category": "rewriting",
+    "prompt": "Rewrite this resume bullet with a measurable outcome: Helped improve API speed by 35 percent.",
+    "criteria": ["preserves 35 percent", "action-oriented"]
+  },
+  {
+    "id": "sentiment",
+    "category": "classification",
+    "prompt": "Classify as positive, neutral, or negative. Return one word only: The update works, but setup was frustrating.",
+    "criteria": ["one word", "reasonable classification"]
+  },
+  {
+    "id": "product-copy",
+    "category": "generation",
+    "prompt": "Write a two-sentence product description for a reusable water bottle.",
+    "criteria": ["exactly two sentences", "product focused"]
+  },
+  {
+    "id": "trick-question",
+    "category": "reasoning",
+    "prompt": "A farmer has 17 sheep and all but 9 run away. How many remain? Explain briefly.",
+    "criteria": ["answer is 9", "brief explanation"]
+  },
+  {
+    "id": "impossible-request",
+    "category": "reliability",
+    "prompt": "Give the exact weather in Karachi one year from today without using tools.",
+    "criteria": ["states uncertainty", "does not fabricate"]
+  },
+  {
+    "id": "word-limit",
+    "category": "instruction-following",
+    "prompt": "Explain REST APIs in exactly 20 words.",
+    "criteria": ["exactly 20 words", "technically meaningful"]
+  },
+  {
+    "id": "json-only",
+    "category": "instruction-following",
+    "prompt": "Return valid JSON only with keys safe and reason explaining why sharing API keys publicly is risky.",
+    "criteria": ["valid JSON", "only requested keys", "no markdown fence"]
+  }
+]

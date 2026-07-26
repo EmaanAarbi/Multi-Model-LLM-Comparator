@@ -4,12 +4,14 @@ import pytest
 
 from app.api.routes import (
     get_anthropic_service,
+    get_comparator_service,
     get_gemini_service,
     get_openai_service,
 )
 from app.main import app
 from app.schemas import ModelResult
 from app.services.provider import LLMProvider
+from app.services.comparator_service import ComparatorService
 
 
 class StubGeminiService(LLMProvider):
@@ -64,6 +66,11 @@ def test_compare_returns_normalized_provider_result() -> None:
         "model": "test-model",
         "content": "A test response",
         "latency_ms": 42,
+        "input_tokens": None,
+        "output_tokens": None,
+        "estimated_cost": None,
+        "quality_score": None,
+        "error_code": None,
         "error": None,
     }
     assert service.received_prompt == "Explain adapters."
@@ -75,7 +82,8 @@ def test_compare_preserves_normalized_provider_error() -> None:
             provider="gemini",
             model="test-model",
             latency_ms=17,
-            error="AuthenticationError: invalid key",
+            error_code="authentication_error",
+            error="Provider authentication failed.",
         )
     )
     override_service(service)
@@ -87,7 +95,8 @@ def test_compare_preserves_normalized_provider_error() -> None:
 
     assert response.status_code == 200
     assert response.json()["content"] is None
-    assert response.json()["error"] == "AuthenticationError: invalid key"
+    assert response.json()["error_code"] == "authentication_error"
+    assert response.json()["error"] == "Provider authentication failed."
 
 
 def test_compare_rejects_empty_prompt_before_calling_provider() -> None:
@@ -147,3 +156,62 @@ def test_each_provider_endpoint_uses_its_injected_adapter(
     assert response.status_code == 200
     assert response.json()["provider"] == provider
     assert service.received_prompt == "Hello"
+
+
+def test_compare_endpoint_returns_selected_provider_results() -> None:
+    service = ComparatorService(
+        providers={
+            "gemini": StubGeminiService(
+                ModelResult(
+                    provider="gemini",
+                    model="test-model",
+                    content="Gemini",
+                    latency_ms=10,
+                )
+            ),
+            "openai": StubGeminiService(
+                ModelResult(
+                    provider="openai",
+                    model="test-model",
+                    content="OpenAI",
+                    latency_ms=20,
+                )
+            ),
+        }
+    )
+    app.dependency_overrides[get_comparator_service] = lambda: service
+
+    response = client.post(
+        "/api/v1/compare",
+        json={
+            "prompt": "Hello",
+            "providers": ["gemini", "openai"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert [item["provider"] for item in response.json()["results"]] == [
+        "gemini",
+        "openai",
+    ]
+
+
+def test_compare_endpoint_rejects_duplicate_providers() -> None:
+    response = client.post(
+        "/api/v1/compare",
+        json={
+            "prompt": "Hello",
+            "providers": ["gemini", "gemini"],
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_compare_endpoint_rejects_unknown_provider() -> None:
+    response = client.post(
+        "/api/v1/compare",
+        json={"prompt": "Hello", "providers": ["unknown"]},
+    )
+
+    assert response.status_code == 422

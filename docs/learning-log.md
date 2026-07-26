@@ -83,3 +83,96 @@ until a structured error schema is introduced.
   injected adapter.
 - Real requests reached both provider APIs and returned normalized billing
   errors without crashing; successful generation requires account credits.
+
+## Milestone 4 — Concurrent comparison
+
+### Concept
+
+Run independent synchronous provider calls concurrently and preserve the
+requested result order.
+
+### Real problem it solves
+
+Users wait roughly for the slowest selected provider rather than the sum of all
+provider latencies, and one provider's normalized failure does not erase other
+results.
+
+### Trade-off
+
+Worker threads fit the current synchronous SDK adapters and keep the design
+simple. Native async clients may scale more efficiently at higher traffic.
+
+### How we prove it works
+
+Timed test adapters demonstrate concurrent wall-clock behavior, deterministic
+ordering, partial failures, and selected-provider validation.
+
+## Milestone 5 — Token usage and cost
+
+### Concept
+
+Read provider-native usage metadata and normalize input tokens, output tokens,
+and estimated USD cost.
+
+### Real problem it solves
+
+Model selection can include operating cost rather than relying only on output
+quality.
+
+### Trade-off
+
+Hardcoded pricing is fast and auditable but requires maintenance. Unknown
+models return no estimate instead of a misleading value.
+
+### How we prove it works
+
+Adapter tests verify usage extraction and cost tests verify pricing arithmetic,
+unknown models, and missing metadata.
+
+## Milestone 6 — Persistence and evaluation
+
+### Concept
+
+Persist comparison runs and provider results, then attach five-dimension manual
+ratings and calculate a quality score.
+
+### Real problem it solves
+
+Users can revisit experiments, compare evidence over time, and improve model
+recommendations with human judgment.
+
+### Trade-off
+
+SQLite is convenient locally; PostgreSQL is configured for deployment.
+Automatic schema creation is appropriate for this portfolio milestone, while a
+long-lived production system should add versioned database migrations.
+
+### How we prove it works
+
+Repository tests cover save, retrieval, ordering, missing records, and rating
+persistence. A ten-case benchmark dataset provides repeatable prompts and
+evaluation criteria.
+
+## Milestone 7 — Resilience and production packaging
+
+### Concept
+
+Apply safe public error codes, SDK timeouts/retries, unexpected-adapter
+containment, container packaging, and continuous integration.
+
+### Real problem it solves
+
+External APIs fail in normal operation. The comparator stays useful, avoids
+leaking raw provider details, and can be tested and deployed consistently.
+
+### Trade-off
+
+Retries improve transient reliability but can increase tail latency and cost.
+The current policy relies on SDK retry behavior and keeps explicit application
+logic small.
+
+### How we prove it works
+
+Tests cover error classification and adapter failures. Docker uses a supported
+Python runtime, Compose provisions PostgreSQL, and CI runs the complete
+network-free test suite.

@@ -19,7 +19,10 @@ def build_settings() -> Settings:
 
 def build_service(content: list[object]) -> AnthropicService:
     client = Mock()
-    client.messages.create.return_value = SimpleNamespace(content=content)
+    client.messages.create.return_value = SimpleNamespace(
+        content=content,
+        usage=SimpleNamespace(input_tokens=10, output_tokens=5),
+    )
     with patch(
         "app.services.anthropic_service.Anthropic",
         return_value=client,
@@ -45,6 +48,8 @@ def test_generate_normalizes_successful_response() -> None:
     assert result.model == "test-anthropic-model"
     assert result.content == "Hello world"
     assert result.latency_ms >= 0
+    assert result.input_tokens == 10
+    assert result.output_tokens == 5
     assert result.error is None
     service.client.messages.create.assert_called_once_with(
         model="test-anthropic-model",
@@ -75,4 +80,5 @@ def test_generate_normalizes_sdk_exception() -> None:
     result = service.generate("Say hello")
 
     assert result.content is None
-    assert result.error == "RuntimeError: offline"
+    assert result.error_code == "provider_error"
+    assert result.error == "Provider request failed."

@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     openai_model: str
     anthropic_api_key: str
     anthropic_model: str
+    database_url: str = (
+        f"sqlite:///{(BACKEND_DIR / 'comparator.db').as_posix()}"
+    )
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",

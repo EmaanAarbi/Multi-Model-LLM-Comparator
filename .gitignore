@@ -1,0 +1,6 @@
+# Local accidental/global dependency freezes
+/requirements.txt
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/

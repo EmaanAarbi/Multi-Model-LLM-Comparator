@@ -20,7 +20,8 @@ def build_settings() -> Settings:
 def build_service(output_text: str) -> OpenAIService:
     client = Mock()
     client.responses.create.return_value = SimpleNamespace(
-        output_text=output_text
+        output_text=output_text,
+        usage=SimpleNamespace(input_tokens=10, output_tokens=5),
     )
     with patch(
         "app.services.openai_service.OpenAI",
@@ -43,6 +44,8 @@ def test_generate_normalizes_successful_response() -> None:
     assert result.model == "test-openai-model"
     assert result.content == "Hello"
     assert result.latency_ms >= 0
+    assert result.input_tokens == 10
+    assert result.output_tokens == 5
     assert result.error is None
     service.client.responses.create.assert_called_once_with(
         model="test-openai-model",
@@ -64,4 +67,5 @@ def test_generate_normalizes_sdk_exception() -> None:
     result = service.generate("Say hello")
 
     assert result.content is None
-    assert result.error == "RuntimeError: offline"
+    assert result.error_code == "provider_error"
+    assert result.error == "Provider request failed."
